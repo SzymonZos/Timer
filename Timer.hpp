@@ -42,21 +42,21 @@ template<>
 template<typename Count>
 void Timer<std::chrono::nanoseconds>::PrintTime(Count start, Count end) {
     std::cout << "Elapsed time: "
-              << static_cast<double>((end - start)) / 1000.0 << " us  \n";
+              << static_cast<double>(end - start) / 1000.0 << " us  \n";
 }
 
 template<>
 template<typename Count>
 void Timer<std::chrono::microseconds>::PrintTime(Count start, Count end) {
     std::cout << "Elapsed time: "
-              << static_cast<double>((end - start)) / 1000.0 << " ms  \n";
+              << static_cast<double>(end - start) / 1000.0 << " ms  \n";
 }
 
 template<>
 template<typename Count>
 void Timer<std::chrono::milliseconds>::PrintTime(Count start, Count end) {
     std::cout << "Elapsed time: "
-              << static_cast<double>((end - start)) / 1000.0 << " s  \n";
+              << static_cast<double>(end - start) / 1000.0 << " s  \n";
 }
 
 template<>
