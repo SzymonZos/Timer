@@ -1,5 +1,5 @@
-#ifndef BASICCPPTHREADS_TIMER_HPP
-#define BASICCPPTHREADS_TIMER_HPP
+#ifndef TIMER_HPP
+#define TIMER_HPP
 
 #include <chrono>
 #include <iostream>
@@ -77,4 +77,4 @@ void Timer<std::chrono::hours>::PrintTime(Count start, Count end) {
     std::cout << "Elapsed time: " << end - start << " h  \n";
 }
 
-#endif // BASICCPPTHREADS_TIMER_HPP
+#endif // TIMER_HPP
