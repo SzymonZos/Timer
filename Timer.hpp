@@ -2,12 +2,11 @@
 #define TIMER_HPP
 
 #include <chrono>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 
-enum class Ostream : std::size_t {
-    standard,
-    file
-};
+enum class Ostream : std::size_t { standard, file };
 
 template<typename T = std::chrono::milliseconds>
 class Timer {
@@ -15,7 +14,7 @@ public:
     explicit Timer(Ostream ostreamType = Ostream::standard,
                    std::string filepath = "") :
         ostreamType_{ostreamType},
-        filepath_{filepath},
+        filepath_{std::move(filepath)},
         startTimePoint_{std::chrono::high_resolution_clock::now()} {}
 
     ~Timer() {
@@ -31,7 +30,7 @@ public:
 private:
     std::chrono::time_point<std::chrono::high_resolution_clock>
         startTimePoint_;
-    std::ostream ostream_{};
+    std::ostringstream ostream_{};
     Ostream ostreamType_{};
     std::string filepath_{};
 
@@ -46,12 +45,12 @@ private:
         SaveTime(start, end);
         switch (ostreamType_) {
         case Ostream::standard:
-            std::cout << ostream_;
+            std::cout << ostream_.str();
             break;
         case Ostream::file:
             if (!filepath_.empty()) {
                 std::ofstream file{filepath_};
-                file << ostream_;
+                file << ostream_.str();
             }
             break;
         }
