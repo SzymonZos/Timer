@@ -12,13 +12,20 @@ template<typename T = std::chrono::milliseconds>
 class Timer {
 public:
     explicit Timer(Ostream ostreamType = Ostream::standard,
-                   std::string filepath = "") :
+                   const std::string& filepath = "") :
         ostreamType_{ostreamType},
-        filepath_{std::move(filepath)},
+        dummy_{std::ofstream{filepath, std::ios::app}},
+        file_{dummy_},
+        startTimePoint_{std::chrono::high_resolution_clock::now()} {}
+
+    explicit Timer(std::ofstream& file, Ostream ostreamType = Ostream::file) :
+        ostreamType_{ostreamType},
+        file_{file},
         startTimePoint_{std::chrono::high_resolution_clock::now()} {}
 
     ~Timer() {
         StopTimer();
+        HandleOstream();
     }
 
     Timer(const Timer& other) = delete;
@@ -28,11 +35,12 @@ public:
     Timer& operator=(Timer&& other) = delete;
 
 private:
-    std::chrono::time_point<std::chrono::high_resolution_clock>
-        startTimePoint_;
     std::ostringstream ostream_{};
     Ostream ostreamType_{};
-    std::string filepath_{};
+    std::ofstream dummy_{};
+    std::ofstream& file_;
+    std::chrono::time_point<std::chrono::high_resolution_clock>
+        startTimePoint_;
 
     void StopTimer() {
         const auto endTimePoint = std::chrono::high_resolution_clock::now();
@@ -43,42 +51,42 @@ private:
                              .time_since_epoch()
                              .count();
         SaveTime(start, end);
+    }
+
+    template<typename Count>
+    void SaveTime(Count start, Count end);
+
+    void HandleOstream() {
         switch (ostreamType_) {
         case Ostream::standard:
             std::cout << ostream_.str();
             break;
         case Ostream::file:
-            if (!filepath_.empty()) {
-                std::ofstream file{filepath_};
-                file << ostream_.str();
-            }
+            file_ << ostream_.str();
             break;
         }
     }
-
-    template<typename Count>
-    void SaveTime(Count start, Count end);
 };
 
 template<>
 template<typename Count>
 void Timer<std::chrono::nanoseconds>::SaveTime(Count start, Count end) {
-    ostream_ << "Elapsed time: "
-             << static_cast<double>(end - start) / 1000.0 << " us  \n";
+    ostream_ << "Elapsed time: " << static_cast<double>(end - start) / 1000.0
+             << " us  \n";
 }
 
 template<>
 template<typename Count>
 void Timer<std::chrono::microseconds>::SaveTime(Count start, Count end) {
-    ostream_ << "Elapsed time: "
-             << static_cast<double>(end - start) / 1000.0 << " ms  \n";
+    ostream_ << "Elapsed time: " << static_cast<double>(end - start) / 1000.0
+             << " ms  \n";
 }
 
 template<>
 template<typename Count>
 void Timer<std::chrono::milliseconds>::SaveTime(Count start, Count end) {
-    ostream_ << "Elapsed time: "
-             << static_cast<double>(end - start) / 1000.0 << " s  \n";
+    ostream_ << "Elapsed time: " << static_cast<double>(end - start) / 1000.0
+             << " s  \n";
 }
 
 template<>
