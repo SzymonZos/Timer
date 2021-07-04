@@ -6,26 +6,21 @@
 #include <iostream>
 #include <sstream>
 
-enum class Ostream : std::size_t { standard, file };
-
 template<typename T = std::chrono::milliseconds>
 class Timer {
 public:
-    explicit Timer(Ostream ostreamType = Ostream::standard,
-                   const std::string& filepath = "") :
-        ostreamType_{ostreamType},
-        dummy_{std::ofstream{filepath, std::ios::app}},
-        file_{dummy_},
-        startTimePoint_{std::chrono::high_resolution_clock::now()} {}
+    using clock = std::chrono::high_resolution_clock;
 
-    explicit Timer(std::ofstream& file, Ostream ostreamType = Ostream::file) :
-        ostreamType_{ostreamType},
-        file_{file},
-        startTimePoint_{std::chrono::high_resolution_clock::now()} {}
+    Timer() : ostream_{std::cout} {}
+
+    explicit Timer(std::ofstream& fileStream) : ostream_{fileStream} {}
+
+    explicit Timer(const std::string& filepath) :
+        fileStream_{filepath, std::ios::app},
+        ostream_{fileStream_} {}
 
     ~Timer() {
         StopTimer();
-        HandleOstream();
     }
 
     Timer(const Timer& other) = delete;
@@ -35,15 +30,12 @@ public:
     Timer& operator=(Timer&& other) = delete;
 
 private:
-    std::ostringstream ostream_{};
-    Ostream ostreamType_{};
-    std::ofstream dummy_{};
-    std::ofstream& file_;
-    std::chrono::time_point<std::chrono::high_resolution_clock>
-        startTimePoint_;
+    std::ofstream fileStream_{};
+    std::ostream& ostream_;
+    std::chrono::time_point<clock> startTimePoint_{clock::now()};
 
     void StopTimer() {
-        const auto endTimePoint = std::chrono::high_resolution_clock::now();
+        const auto endTimePoint = clock::now();
         const auto start = std::chrono::time_point_cast<T>(startTimePoint_)
                                .time_since_epoch()
                                .count();
@@ -55,17 +47,6 @@ private:
 
     template<typename Count>
     void SaveTime(Count start, Count end);
-
-    void HandleOstream() {
-        switch (ostreamType_) {
-        case Ostream::standard:
-            std::cout << ostream_.str();
-            break;
-        case Ostream::file:
-            file_ << ostream_.str();
-            break;
-        }
-    }
 };
 
 template<>
